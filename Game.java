@@ -31,19 +31,19 @@ import tthurlow.topdown.UnitPosition.Direction;
  */
 
 public class Game extends Thread {
-	private boolean isRunning = true;
+	private boolean isRunning   = true;
 	private boolean isDebugging = true;
 	private Canvas canvas;
-	private BufferStrategy strategy;
+	private BufferStrategy strategy; 
 	private BufferedImage background;
 	private Graphics2D backgroundGraphics;
 	private Graphics2D graphics;
 	private JFrame frame;
-	public static int width = 640;
-	public static int height = 480;
-	public static int scale = 2;
+	public static int width     = 640;
+	public static int height    = 480;
+	public static int scale     = 1; // this doesnt work quite right
 	private int framesPerSecond = 0;
-	private int fpsMeter = 0;
+	private int fpsMeter        = 0;
 	private GraphicsConfiguration config =
 				GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration();
@@ -63,14 +63,14 @@ public class Game extends Thread {
 	public Game() {
 		// Asset and map loading
 		ImageLoader loader = new ImageLoader();
-		tileSheet = loader.load("./sprites/tiles.png");
-		thingSheet = loader.load("./sprites/things.png");
-		charSheet = loader.load("./sprites/chars.png");
-		tileSprites = new SpriteSheet(tileSheet);
+		tileSheet    = loader.load("./sprites/tiles.png");
+		thingSheet   = loader.load("./sprites/things.png");
+		charSheet    = loader.load("./sprites/chars.png");
+		tileSprites  = new SpriteSheet(tileSheet);
 		thingSprites = new SpriteSheet(thingSheet);
-		charSprites = new SpriteSheet(charSheet);
-		testmap = new Map("export", new UnitPosition(32, 32, Direction.SOUTH));
-		player = new Player(testmap.getSpawnPosition(), charSprites, testmap);
+		charSprites  = new SpriteSheet(charSheet);
+		testmap      = new Map("export", new UnitPosition(32, 32, Direction.SOUTH));
+		player       = new Player(testmap.getSpawnPosition(), charSprites, testmap);
 		
 		// JFrame
 		frame = new JFrame();
