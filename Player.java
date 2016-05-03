@@ -11,7 +11,7 @@ public class Player implements KeyListener {
 	private Map currentMap;
 	private SpriteSheet sprites = Game.charSprites;
 	private boolean up = false, down = false, left = false, right = false, isMoving = false;
-	private int speed = 1;
+	private int speed = 1; // changing this is bad haha
 
 	public Player(UnitPosition playerPosition, SpriteSheet sprites, Map map) {
 		this.position = playerPosition;
@@ -22,16 +22,16 @@ public class Player implements KeyListener {
 	public void tick() {
 		for (int i = 0; i < speed; i++) { // For loop prevents speeds higher than 1 from skipping over
 										  // collision boundaries
-			if (up && canEnterNextTile(Direction.NORTH)) {
+			if (up && canEnterNextSquare(Direction.NORTH)) {
 				position.decrementY(speed);
 			}
-			if (down && canEnterNextTile(Direction.SOUTH)) {
+			if (down && canEnterNextSquare(Direction.SOUTH)) {
 				position.incrementY(speed);
 			}
-			if (left && canEnterNextTile(Direction.WEST)) {
+			if (left && canEnterNextSquare(Direction.WEST)) {
 				position.decrementX(speed);
 			}
-			if (right && canEnterNextTile(Direction.EAST)) {
+			if (right && canEnterNextSquare(Direction.EAST)) {
 				position.incrementX(speed);
 			}
 		}
@@ -42,7 +42,7 @@ public class Player implements KeyListener {
 				position.getY() - ((16 * Game.scale) / 2), 16 * Game.scale, 16 * Game.scale, null);
 	}
 	
-	public boolean canEnterNextTile(Direction dir) {
+	public boolean canEnterNextSquare(Direction dir) {
 		int posX = position.getX() / 16;
 		int posY = position.getY() / 16;
 		int innerPosX = getInnerPositionX();
@@ -51,28 +51,32 @@ public class Player implements KeyListener {
 		switch (dir) {
 			case NORTH:
 				Tile nextTileNorth = currentMap.getTileAtPosition(posX, posY - 1);
-				if (!nextTileNorth.isSolid() || innerPosY != 0) {
+				Thing nextThingNorth = currentMap.getThingAtPosition(posX, posY - 1);
+				if ((!nextTileNorth.isSolid() && !nextThingNorth.isSolid()) || innerPosY != 0) {
 					return true;
 				} else {
 					return false;
 				}
 			case EAST:
 				Tile nextTileEast = currentMap.getTileAtPosition(posX + 1, posY);
-				if (!nextTileEast.isSolid() || innerPosX != 15) {
+				Thing nextThingEast = currentMap.getThingAtPosition(posX + 1, posY);
+				if ((!nextTileEast.isSolid() && !nextThingEast.isSolid()) || innerPosX != 15) {
 					return true;
 				} else {
 					return false;
 				}
 			case SOUTH:
 				Tile nextTileSouth = currentMap.getTileAtPosition(posX, posY + 1);
-				if (!nextTileSouth.isSolid() || innerPosY != 15) {
+				Thing nextThingSouth = currentMap.getThingAtPosition(posX, posY + 1);
+				if ((!nextTileSouth.isSolid() && !nextThingSouth.isSolid()) || innerPosY != 15) {
 					return true;
 				} else {
 					return false;
 				}
 			case WEST:
 				Tile nextTileWest = currentMap.getTileAtPosition(posX - 1, posY);
-				if (!nextTileWest.isSolid() || innerPosX != 0) {
+				Thing nextThingWest = currentMap.getThingAtPosition(posX - 1, posY);
+				if ((!nextTileWest.isSolid() && !nextThingWest.isSolid()) || innerPosX != 0) {
 					return true;
 				} else {
 					return false;
@@ -178,28 +182,28 @@ public class Player implements KeyListener {
 		}
 		
 		if (e.getKeyCode() == 32) {
-			Tile interactedTile = null;
+			Tile interactedThing = null;
 			int posX = position.getX() / 16;
 			int posY = position.getY() / 16;
 			switch(position.getHeading()) {
 				case NONE:
-					System.out.println("Interact with player, heading NONE.");
+					System.out.println("Interact with:" + "Nothing" + ". heading NONE.");
 					break;
 				case NORTH:
-					System.out.println("Interact with player, heading NORTH.");
-					interact(posX, posY - 1, currentMap.getTileAtPosition(posX, posY - 1).getId());
+					System.out.println("Interact with:" + currentMap.getThingAtPosition(posX, posY - 1).getName() + ". Heading NORTH.");
+					interact(posX, posY - 1, currentMap.getThingAtPosition(posX, posY - 1).getId());
 					break;
 				case EAST:
-					System.out.println("Interact with player, heading EAST.");
-					interact(posX + 1, posY, currentMap.getTileAtPosition(posX + 1, posY).getId());
+					System.out.println("Interact with:" + currentMap.getThingAtPosition(posX + 1, posY).getName() + ". Heading EAST.");
+					interact(posX + 1, posY, currentMap.getThingAtPosition(posX + 1, posY).getId());
 					break;
 				case SOUTH:
-					System.out.println("Interact with player, heading SOUTH.");
-					interact(posX, posY + 1, currentMap.getTileAtPosition(posX, posY + 1).getId());
+					System.out.println("Interact with:" + currentMap.getThingAtPosition(posX, posY + 1).getName() + ". Heading SOUTH.");
+					interact(posX, posY + 1, currentMap.getThingAtPosition(posX, posY + 1).getId());
 					break;
 				case WEST:
-					System.out.println("Interact with player, heading WEST.");
-					interact(posX - 1, posY, currentMap.getTileAtPosition(posX - 1, posY).getId());
+					System.out.println("Interact with:" + currentMap.getThingAtPosition(posX - 1, posY).getName() + ". Heading WEST.");
+					interact(posX - 1, posY, currentMap.getThingAtPosition(posX - 1, posY).getId());
 					break;
 				default:
 					break;
@@ -209,11 +213,12 @@ public class Player implements KeyListener {
 	}
 	
 	public void interact(int interactX, int interactY, int interactedID) {
-		if (interactedID == 4) {
-			currentMap.setTile(interactX, interactY, 5);
-		} else if (interactedID == 5) {
-			currentMap.setTile(interactX, interactY, 4);
+		if (interactedID == 3) {
+			currentMap.setThing(interactX, interactY, 4);
+		} else if (interactedID == 4) {
+			currentMap.setThing(interactX, interactY, 3);
 		}
+
 	}
 	
 	public String toString() {

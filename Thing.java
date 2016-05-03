@@ -29,6 +29,8 @@ public class Thing {
 		if (id == 0) return thingEmpty;
 		if (id == 1) return thingRock;
 		if (id == 2) return thingWeeds;
+		if (id == 3) return thingDoorClosed;
+		if (id == 4) return thingDoorOpen;
 		else return thingEmpty;
 	}
 	
@@ -47,5 +49,7 @@ public class Thing {
 	private static final Thing thingEmpty = new Thing(0, "empty", false, false);
 	private static final Thing thingRock = new Thing(1, "Rock", true, false);
 	private static final Thing thingWeeds = new Thing(2, "Weeds", false, false);
+	private static final Thing thingDoorClosed = new Thing(3, "Closed Door", true, true);
+	private static final Thing thingDoorOpen = new Thing(4, "Open Door", false, true);
 	
 }
