@@ -21,7 +21,7 @@ public class Map {
 			 * Tiles
 			 */
 			
-			String tilePath = URLDecoder.decode(getClass().getResource("maps/" + fileName + "-tiles" + ".csv").getPath());
+			String tilePath = URLDecoder.decode(getClass().getResource("maps/" + fileName + "_tiles" + ".csv").getPath());
 			File tileFile = new File(tilePath);
 			System.out.println("Tiles: " + tileFile.getPath());
 
@@ -66,7 +66,7 @@ public class Map {
 			 * Things
 			 */
 			
-			String thingPath = URLDecoder.decode(getClass().getResource("maps/" + fileName + "-things" + ".csv").getPath());
+			String thingPath = URLDecoder.decode(getClass().getResource("maps/" + fileName + "_things" + ".csv").getPath());
 			File thingFile = new File(thingPath);
 			System.out.println("Tiles: " + thingFile.getPath());
 
@@ -79,6 +79,7 @@ public class Map {
 					thingString = thingString + "|" + thingScanner.nextLine();
 				}
 				thingString = thingString.replace(",", "");
+				thingString = thingString.replace("-1", "0");
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}

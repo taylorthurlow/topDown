@@ -180,24 +180,27 @@ public class Game extends Thread {
 	public void renderGame(Graphics2D g) {
 		g.setColor(Color.DARK_GRAY);
 		g.fillRect(0, 0, width, height);
-		
-		// Render map
+
 		testmap.render(g, 0, 0);
 		
-		// Render debug
 		if (isDebugging) {
+			// Current player square highlight
 			int selX = player.getPosition().getX() - player.getPosition().getX() % 16;
 			int selY = player.getPosition().getY() - player.getPosition().getY() % 16;
 			g.setColor(Color.DARK_GRAY);
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5F));
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3F));
 			g.fillRect(selX, selY, 16, 16);
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0F));
+	
+			// FPS meter	
+			g.setColor(Color.YELLOW);
+			g.setFont(new Font("Arial", Font.BOLD, 12));
+			g.drawString("FPS: " + fpsMeter, 5, 15);
 		}
 		
 		player.render(g);
-		
-		g.setColor(Color.YELLOW);
-		g.setFont(new Font("Arial", Font.BOLD, 12));
-		g.drawString("FPS: " + fpsMeter, 5, 15);
+
+		// Render UI here
 	}
 	
 	public static void main(String[] args) {
