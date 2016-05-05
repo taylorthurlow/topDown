@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
-import tthurlow.topdown.UnitPosition.Direction;
+import tthurlow.topdown.EntityPosition.Direction;
 
 /**
  * Code originally pulled from StackOverflow question:
@@ -34,22 +34,28 @@ public class Game extends Thread {
 	private boolean isRunning   = true;
 	private boolean isDebugging = true;
 	private Canvas canvas;
-	private BufferStrategy strategy; 
+	private BufferStrategy strategy;
 	private BufferedImage background;
 	private Graphics2D backgroundGraphics;
 	private Graphics2D graphics;
 	private JFrame frame;
-	public static int width     = 640;
-	public static int height    = 480;
-	public static int scale     = 1; // this doesnt work quite right
-	private int framesPerSecond = 0;
-	private int fpsMeter        = 0;
+	private static int width  = 640;
+	private static int height = 480;
+
+	private static int TICKS_PER_SECOND = 25;
+	private static int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
+	private static int MAX_FRAMESKIP = 5;
+	private static long NEXT_GAME_TICK = System.nanoTime() / 1000000;
+	private static int loops;
+	private static float interpolation;
+	private static int RENDER_FPS = 0;
+
 	private GraphicsConfiguration config =
 				GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration();
 	
 	// Create a hardware accelerated image
-	public final BufferedImage create(final int width, final int height,
+	private BufferedImage create(final int width, final int height,
 			final boolean alpha) {
 		return config.createCompatibleImage(width, height, alpha
     			? Transparency.TRANSLUCENT : Transparency.OPAQUE);
@@ -57,10 +63,10 @@ public class Game extends Thread {
 
 	public static SpriteSheet tileSprites, thingSprites, charSprites;
 	private BufferedImage tileSheet, thingSheet, charSheet;
-	private Player player;
+	private EntityPlayer player;
 	private Map testmap;
 	
-	public Game() {
+	private Game() {
 		// Asset and map loading
 		ImageLoader loader = new ImageLoader();
 		tileSheet    = loader.load("./sprites/tiles.png");
@@ -69,20 +75,20 @@ public class Game extends Thread {
 		tileSprites  = new SpriteSheet(tileSheet);
 		thingSprites = new SpriteSheet(thingSheet);
 		charSprites  = new SpriteSheet(charSheet);
-		testmap      = new Map("export", new UnitPosition(32, 32, Direction.SOUTH));
-		player       = new Player(testmap.getSpawnPosition(), charSprites, testmap);
+		testmap      = new Map("export", new EntityPosition(2, 2, Direction.SOUTH));
+		player       = new EntityPlayer(testmap.getSpawnPosition(), charSprites, testmap);
 		
 		// JFrame
 		frame = new JFrame();
 		frame.addWindowListener(new FrameClose());
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		frame.setSize(width * scale, height * scale);
+		frame.setSize(width, height);
 		frame.addKeyListener(player);
 		frame.setVisible(true);
-		
+
 		// Canvas
 		canvas = new Canvas(config);
-		canvas.setSize(width * scale, height * scale);
+		canvas.setSize(width, height);
 		canvas.setFocusable(false);
 		frame.add(canvas, 0);
 		
@@ -131,53 +137,64 @@ public class Game extends Thread {
 	
 	public void run() {
 		backgroundGraphics = (Graphics2D) background.getGraphics();
-		long fpsWait = (long) (1.0 / 60 * 1000);
+
+		long lastLoopTime = System.nanoTime();
+
 		main: while (isRunning) {
-			long renderStart = System.nanoTime();
-			updateGame();
-			
-			// Update Graphics
-			do {
-				Graphics2D bg = getBuffer();
-				if (!isRunning) {
-					break main;
-				}
-				renderGame(backgroundGraphics); // this calls your draw method
-				if (scale != 1) {
-					bg.drawImage(background, 0, 0, width * scale, height * scale, 
-							0, 0, width, height, null);
-				} else {
-					bg.drawImage(background, 0, 0, null);
-				}
-				bg.dispose();
-			} while (!updateScreen());
-			
-			
-			// FPS limiting here
-			long renderTime = (System.nanoTime() - renderStart) / 1000000;
-			
+
+			loops = 0;
+
+			while ((System.nanoTime() / 1000000) > NEXT_GAME_TICK && loops < MAX_FRAMESKIP) {
+				tick();
+				NEXT_GAME_TICK += SKIP_TICKS;
+				loops++;
+			}
+
+			interpolation = (float) ((System.nanoTime() / 1000000) + SKIP_TICKS - NEXT_GAME_TICK) / (float) (SKIP_TICKS);
+			render(interpolation);
+
+			setFpsMeter((int) ((System.nanoTime() / 1000000) + SKIP_TICKS - NEXT_GAME_TICK));
+
+			/**
 			try {
-				Thread.sleep(Math.max(0, fpsWait - renderTime));
+				int sleepTime = (int) (lastLoopTime - System.nanoTime() + OPTIMAL_TIME) / 1000000;
+				System.out.println("sleepTime: " + sleepTime);
+				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
 				Thread.interrupted();
 				break;
 			}
-			renderTime = (System.nanoTime() - renderStart) / 1000000;
-			framesPerSecond = (int) (1000 / renderTime);
+			 **/
 		}
 		frame.dispose();
 	}
-	
+
+	private void render(float interpolation) {
+		do {
+			Graphics2D bg = getBuffer();
+			if (!isRunning) {
+				/** This worked before render() was its own method. Not sure
+				 * if this will cause issues in the future with closing the
+				 * app or not.
+				 */
+				//break main;
+			}
+			renderGame(backgroundGraphics, interpolation); // this calls your draw method
+			bg.drawImage(background, 0, 0, width, height, 0, 0, width, height, null);
+			bg.dispose();
+		} while (!updateScreen());
+	}
+
 	private void setFpsMeter(int fps) {
-		this.fpsMeter = fps;
+		this.RENDER_FPS = fps;
 	}
 	
-	public void updateGame() {
+	private void tick() {
 		player.tick();
-		setFpsMeter(framesPerSecond);
+		testmap.tick();
 	}
 	
-	public void renderGame(Graphics2D g) {
+	private void renderGame(Graphics2D g, float interpolation) {
 		g.setColor(Color.DARK_GRAY);
 		g.fillRect(0, 0, width, height);
 
@@ -185,8 +202,8 @@ public class Game extends Thread {
 		
 		if (isDebugging) {
 			// Current player square highlight
-			int selX = player.getPosition().getX() - player.getPosition().getX() % 16;
-			int selY = player.getPosition().getY() - player.getPosition().getY() % 16;
+			int selX = player.getTilePositionX() * 16;
+			int selY = player.getTilePositionY() * 16;
 			g.setColor(Color.DARK_GRAY);
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3F));
 			g.fillRect(selX, selY, 16, 16);
@@ -195,10 +212,10 @@ public class Game extends Thread {
 			// FPS meter	
 			g.setColor(Color.YELLOW);
 			g.setFont(new Font("Arial", Font.BOLD, 12));
-			g.drawString("FPS: " + fpsMeter, 5, 15);
+			g.drawString("FPS: " + RENDER_FPS, 5, 15);
 		}
 		
-		player.render(g);
+		player.render(g, interpolation);
 
 		// Render UI here
 	}

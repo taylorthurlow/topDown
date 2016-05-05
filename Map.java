@@ -12,9 +12,9 @@ public class Map {
 	private Tile mapTiles[][];
 	private Thing mapThings[][];
 	private int width = 0, height = 0;
-	private UnitPosition spawnPosition;
+	private EntityPosition spawnPosition;
 	
-	public Map(String fileName, UnitPosition spawnPosition) {
+	public Map(String fileName, EntityPosition spawnPosition) {
 			this.spawnPosition = spawnPosition;
 
 			/**
@@ -138,7 +138,7 @@ public class Map {
 				int id = mapTiles[j][i].getId();
 				int spriteX = (id % 16);
 				int spriteY = (id / 16);
-				g.drawImage(Tile.getSprites().crop(spriteX, spriteY, 16, 16), 16 * i, 16 * j, 16 * Game.scale, 16 * Game.scale, null);
+				g.drawImage(Tile.getSprites().crop(spriteX, spriteY, 16, 16), 16 * i, 16 * j, 16, 16, null);
 			}
 		}
 
@@ -148,9 +148,13 @@ public class Map {
 				int id = mapThings[j][i].getId();
 				int spriteX = (id % 16);
 				int spriteY = (id / 16);
-				g.drawImage(Thing.getSprites().crop(spriteX, spriteY, 16, 16), 16 * i, 16 * j, 16 * Game.scale, 16 * Game.scale, null);
+				g.drawImage(Thing.getSprites().crop(spriteX, spriteY, 16, 16), 16 * i, 16 * j, 16, 16, null);
 			}
 		}
+	}
+
+	public void tick() {
+		// tick map logic here
 	}
 	
 	public void setTile(int x, int y, int newTileId) {
@@ -185,7 +189,7 @@ public class Map {
 		return mapThings;
 	}
 
-	public UnitPosition getSpawnPosition() {
+	public EntityPosition getSpawnPosition() {
 		return spawnPosition;
 	}
 }

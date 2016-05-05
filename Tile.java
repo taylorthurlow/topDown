@@ -30,6 +30,7 @@ public class Tile {
 		if (id == 1) return tileGrass;
 		if (id == 2) return tileStone;
 		if (id == 3) return tileWater;
+		if (id == 4) return tileBrick;
 		else return tileBlackness;
 	}
 	
@@ -49,4 +50,5 @@ public class Tile {
 	private static final Tile tileGrass = new Tile(1, "Grass", false);
 	private static final Tile tileStone = new Tile(2, "Stone", false);
 	private static final Tile tileWater = new Tile(3, "Water", true);
+	private static final Tile tileBrick = new Tile(4, "Brick", true);
 }

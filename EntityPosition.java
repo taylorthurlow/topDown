@@ -1,47 +1,47 @@
 package tthurlow.topdown;
 
-public class UnitPosition {
-	private int x, y;
+public class EntityPosition {
+	private double x, y;
 	private Direction heading;
 	public static enum Direction {
 		NORTH, EAST, SOUTH, WEST, NONE
 	}
 	
-	public UnitPosition(int posX, int posY, Direction heading) {
+	public EntityPosition(double posX, double posY, Direction heading) {
 		this.x = posX;
 		this.y = posY;
 		this.heading = heading;
 	}
 
-	public int getX() {
+	public double getX() {
 		return x;
 	}
 
-	public void setX(int x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 	
-	public void incrementX(int increment) {
+	public void incrementX(double increment) {
 		this.x += increment;
 	}
 	
-	public void decrementX(int decrement) {
+	public void decrementX(double decrement) {
 		this.x -= decrement;
 	}
 
-	public int getY() {
+	public double getY() {
 		return y;
 	}
 
-	public void setY(int y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 	
-	public void incrementY(int increment) {
+	public void incrementY(double increment) {
 		this.y += increment;
 	}
 	
-	public void decrementY(int decrement) {
+	public void decrementY(double decrement) {
 		this.y -= decrement;
 	}
 
