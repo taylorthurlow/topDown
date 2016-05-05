@@ -5,14 +5,15 @@ import java.awt.Graphics;
 import tthurlow.topdown.EntityPosition.Direction;
 
 public class Entity {
-	public EntityPosition position;
+	public EntityPosition position, viewPosition;
 	public Map map;
 	public SpriteSheet sprites = Game.charSprites;
 	public boolean up = false, down = false, left = false, right = false, isMoving = false;
-	public int speed = 1;
+	public double speed = 0.0625;
 
 	public Entity(EntityPosition entityPosition, SpriteSheet sprites, Map map) {
 		this.position = entityPosition;
+		this.viewPosition = entityPosition;
 		this.sprites = sprites;
 		this.map = map;
 	}
@@ -25,10 +26,11 @@ public class Entity {
 	}
 
 	public void render(Graphics g, float interpolation) {
+		setViewPosition(interpolation);
 		g.drawImage(sprites.crop(0, 0, 16, 16),
-				(int) (Math.floor(position.getX() / 16) * interpolation),
-				(int) (Math.floor(position.getY() / 16) * interpolation),
-				16, 16, null);
+			(viewPosition.getTileX() * 16 + viewPosition.getInnerPositionX()) - 8,
+			(viewPosition.getTileY() * 16 + viewPosition.getInnerPositionY()) - 8,
+			16, 16, null);
 	}
 
 	public boolean canEnterNextSquare(Direction dir) {
@@ -85,43 +87,43 @@ public class Entity {
 		return position;
 	}
 
-	public void setPosition(EntityPosition newPosition) {
-		position.setX(newPosition.getX());
-		position.setY(newPosition.getY());
+	public void setViewPosition(double interpolation) {
+		double adjustment = round16(speed * interpolation);
+
+		if (up && !left && !right) { // Only upwards
+			viewPosition.setY(position.getY() - adjustment);
+		} else if (left && !down && !up) { // Only leftwards
+			viewPosition.setX(position.getX() - adjustment);
+		} else if (down && !left && !right) { // Only downwards
+			viewPosition.setY(position.getY() + adjustment);
+		} else if (right && !up && !down) { // Only rightwards
+			viewPosition.setX(position.getX() + adjustment);
+		} else if (up && left) {
+			viewPosition.setY(position.getY() - adjustment);
+			viewPosition.setX(position.getX() - adjustment);
+		} else if (left && down) {
+			viewPosition.setY(position.getY() + adjustment);
+			viewPosition.setX(position.getX() - adjustment);
+		} else if (down && right) {
+			viewPosition.setY(position.getY() + adjustment);
+			viewPosition.setX(position.getX() + adjustment);
+		} else if (right && up) {
+			viewPosition.setY(position.getY() - adjustment);
+			viewPosition.setX(position.getX() + adjustment);
+		}
 	}
 
-	public int getTilePositionX() {
-		long iPart = (long) position.getX();
-		return (int) iPart;
-	}
-
-	public int getTilePositionY() {
-		long iPart = (long) position.getY();
-		return (int) iPart;
-	}
-
-	public int getInnerPositionX() {
-		/**
-		 * This next code rounds the decimal part of the position (effectively position within each square) to the
-		 * nearest sixteenth (nearest pixel) by multiplying the decimal part by 16, rounding to the nearest integer,
-		 * and then dividing by 16. The result should effectively be the sub-square position in pixels.
-		 */
-		long iPart = (long) position.getX();
-		double fPart = position.getX() - iPart;
-		return (int) ((Math.round(fPart * 16)) / 16);
-	}
-
-	public int getInnerPositionY() {
-		long iPart = (long) position.getY();
-		double fPart = position.getY() - iPart;
-		return (int) ((Math.round(fPart * 16)) / 16);
+	public static double round16(double toRound) {
+		long iPart = (long) toRound;
+		double fPart = toRound - iPart;
+		return iPart + (double) (Math.round(fPart * 16)) / 16;
 	}
 
 	public boolean isMoving() {
 		return isMoving;
 	}
 
-	public int getSpeed() {
+	public double getSpeed() {
 		return speed;
 	}
 
@@ -129,17 +131,17 @@ public class Entity {
 		this.speed = speed;
 	}
 
-	public Map getmap() {
+	public Map getMap() {
 		return map;
 	}
 
-	public void setmap(Map map) {
+	public void setMap(Map map) {
 		this.map = map;
 	}
 
 	public String toString() {
 		return "Raw: (" + position.getX() + ", " + position.getY() + ")  Tile: (" + position.getX() / 16 +
-				", " + position.getY() / 16 + ")  Sub: (" + getInnerPositionX() + ", " + getInnerPositionY() +
+				", " + position.getY() / 16 + ")  Sub: (" + position.getInnerPositionX() + ", " + position.getInnerPositionY() +
 				")  Speed: " + speed + " un/sec, heading " + position.getHeading().toString();
 	}
 }

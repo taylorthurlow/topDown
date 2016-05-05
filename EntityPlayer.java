@@ -64,6 +64,10 @@ public class EntityPlayer extends Entity implements KeyListener {
 			// D or RIGHT_ARR released
 			right = false;
 		}
+		if (e.getKeyCode() == 32) {
+			System.out.println("Garbage collecting.");
+			System.gc();
+		}
 		
 		if (!up && !down && !left && !right) {
 			isMoving = false;

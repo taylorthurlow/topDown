@@ -138,8 +138,6 @@ public class Game extends Thread {
 	public void run() {
 		backgroundGraphics = (Graphics2D) background.getGraphics();
 
-		long lastLoopTime = System.nanoTime();
-
 		main: while (isRunning) {
 
 			loops = 0;
@@ -202,8 +200,8 @@ public class Game extends Thread {
 		
 		if (isDebugging) {
 			// Current player square highlight
-			int selX = player.getTilePositionX() * 16;
-			int selY = player.getTilePositionY() * 16;
+			int selX = player.getPosition().getTileX() * 16;
+			int selY = player.getPosition().getTileY() * 16;
 			g.setColor(Color.DARK_GRAY);
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3F));
 			g.fillRect(selX, selY, 16, 16);
@@ -213,6 +211,12 @@ public class Game extends Thread {
 			g.setColor(Color.YELLOW);
 			g.setFont(new Font("Arial", Font.BOLD, 12));
 			g.drawString("FPS: " + RENDER_FPS, 5, 15);
+
+			// Position data
+			g.drawString("X: " + player.getPosition().getTileX() + "(" + player.getPosition().getInnerPositionX() +
+					") [" +	player.getPosition().getX() + "]", 5, 30);
+			g.drawString("Y: " + player.getPosition().getTileY() + "(" + player.getPosition().getInnerPositionY() +
+					") [" +	player.getPosition().getY() + "]", 5, 45);
 		}
 		
 		player.render(g, interpolation);
