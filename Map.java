@@ -131,7 +131,7 @@ public class Map {
 	    return bidi;
 	}
 	
-	public void render(Graphics g, int x, int y) {	
+	public void render(Graphics g) {
 		// Tiles
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {

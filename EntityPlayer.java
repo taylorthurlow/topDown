@@ -65,8 +65,9 @@ public class EntityPlayer extends Entity implements KeyListener {
 			right = false;
 		}
 		if (e.getKeyCode() == 32) {
-			System.out.println("Garbage collecting.");
+			System.out.print("Garbage collecting...");
 			System.gc();
+			System.out.println(" collected.");
 		}
 		
 		if (!up && !down && !left && !right) {

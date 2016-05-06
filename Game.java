@@ -33,11 +33,11 @@ import tthurlow.topdown.EntityPosition.Direction;
 public class Game extends Thread {
 	private boolean isRunning   = true;
 	private boolean isDebugging = true;
-	private Canvas canvas;
 	private BufferStrategy strategy;
 	private BufferedImage background;
 	private Graphics2D backgroundGraphics;
 	private Graphics2D graphics;
+	private Graphics2D bg;
 	private JFrame frame;
 	private static int width  = 640;
 	private static int height = 480;
@@ -46,37 +46,37 @@ public class Game extends Thread {
 	private static int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
 	private static int MAX_FRAMESKIP = 5;
 	private static long NEXT_GAME_TICK = System.nanoTime() / 1000000;
-	private static int loops;
-	private static float interpolation;
 	private static int RENDER_FPS = 0;
+	private static float interpolation;
+
+	private Font debugFont = new Font("Arial", Font.BOLD, 12);
+	private int selX = 0;
+	private int selY = 0;
 
 	private GraphicsConfiguration config =
 				GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration();
 	
 	// Create a hardware accelerated image
-	private BufferedImage create(final int width, final int height,
-			final boolean alpha) {
-		return config.createCompatibleImage(width, height, alpha
-    			? Transparency.TRANSLUCENT : Transparency.OPAQUE);
+	private BufferedImage create(final int width, final int height, final boolean alpha) {
+		return config.createCompatibleImage(width, height, alpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE);
 	}
 
-	public static SpriteSheet tileSprites, thingSprites, charSprites;
-	private BufferedImage tileSheet, thingSheet, charSheet;
+	static SpriteSheet tileSprites, thingSprites, charSprites;
 	private EntityPlayer player;
-	private Map testmap;
+	private Map testMap;
 	
 	private Game() {
 		// Asset and map loading
 		ImageLoader loader = new ImageLoader();
-		tileSheet    = loader.load("./sprites/tiles.png");
-		thingSheet   = loader.load("./sprites/things.png");
-		charSheet    = loader.load("./sprites/chars.png");
+		BufferedImage tileSheet = loader.load("./sprites/tiles.png");
+		BufferedImage thingSheet = loader.load("./sprites/things.png");
+		BufferedImage charSheet = loader.load("./sprites/chars.png");
 		tileSprites  = new SpriteSheet(tileSheet);
 		thingSprites = new SpriteSheet(thingSheet);
 		charSprites  = new SpriteSheet(charSheet);
-		testmap      = new Map("export", new EntityPosition(2, 2, Direction.SOUTH));
-		player       = new EntityPlayer(testmap.getSpawnPosition(), charSprites, testmap);
+		testMap      = new Map("export", new EntityPosition(2, 2, Direction.SOUTH));
+		player       = new EntityPlayer(testMap.getSpawnPosition(), charSprites, testMap);
 		
 		// JFrame
 		frame = new JFrame();
@@ -87,7 +87,7 @@ public class Game extends Thread {
 		frame.setVisible(true);
 
 		// Canvas
-		canvas = new Canvas(config);
+		Canvas canvas = new Canvas(config);
 		canvas.setSize(width, height);
 		canvas.setFocusable(false);
 		frame.add(canvas, 0);
@@ -140,7 +140,7 @@ public class Game extends Thread {
 
 		main: while (isRunning) {
 
-			loops = 0;
+			int loops = 0;
 
 			while ((System.nanoTime() / 1000000) > NEXT_GAME_TICK && loops < MAX_FRAMESKIP) {
 				tick();
@@ -169,7 +169,7 @@ public class Game extends Thread {
 
 	private void render(float interpolation) {
 		do {
-			Graphics2D bg = getBuffer();
+			bg = getBuffer();
 			if (!isRunning) {
 				/** This worked before render() was its own method. Not sure
 				 * if this will cause issues in the future with closing the
@@ -184,39 +184,43 @@ public class Game extends Thread {
 	}
 
 	private void setFpsMeter(int fps) {
-		this.RENDER_FPS = fps;
+		RENDER_FPS = fps;
 	}
 	
 	private void tick() {
 		player.tick();
-		testmap.tick();
+		testMap.tick();
 	}
 	
 	private void renderGame(Graphics2D g, float interpolation) {
 		g.setColor(Color.DARK_GRAY);
 		g.fillRect(0, 0, width, height);
 
-		testmap.render(g, 0, 0);
+		testMap.render(g);
 		
 		if (isDebugging) {
 			// Current player square highlight
-			int selX = player.getPosition().getTileX() * 16;
-			int selY = player.getPosition().getTileY() * 16;
+			selX = player.getPosition().getTileX() * 16;
+			selY = player.getPosition().getTileY() * 16;
 			g.setColor(Color.DARK_GRAY);
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3F));
 			g.fillRect(selX, selY, 16, 16);
+
+			// Debug background
+			//g.fillRect(3, 3, 100, 45);
+
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0F));
-	
+
 			// FPS meter	
 			g.setColor(Color.YELLOW);
-			g.setFont(new Font("Arial", Font.BOLD, 12));
-			g.drawString("FPS: " + RENDER_FPS, 5, 15);
+			g.setFont(debugFont);
+			//g.drawString("FPS: " + RENDER_FPS, 5, 15);
 
 			// Position data
-			g.drawString("X: " + player.getPosition().getTileX() + "(" + player.getPosition().getInnerPositionX() +
-					") [" +	player.getPosition().getX() + "]", 5, 30);
-			g.drawString("Y: " + player.getPosition().getTileY() + "(" + player.getPosition().getInnerPositionY() +
-					") [" +	player.getPosition().getY() + "]", 5, 45);
+			//g.drawString("X: " + player.getPosition().getTileX() + "(" + player.getPosition().getInnerPositionX() +
+			//		") [" +	player.getPosition().getX() + "]", 5, 30);
+			//g.drawString("Y: " + player.getPosition().getTileY() + "(" + player.getPosition().getInnerPositionY() +
+			//		") [" +	player.getPosition().getY() + "]", 5, 45);
 		}
 		
 		player.render(g, interpolation);
