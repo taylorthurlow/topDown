@@ -40,7 +40,7 @@ public class Game extends Thread {
 	private Graphics2D bg;
 	private JFrame frame;
 	private static int width  = 640;
-	private static int height = 480;
+	private static int height = 500;
 
 	private static int TICKS_PER_SECOND = 25;
 	private static int SKIP_TICKS = 1000 / TICKS_PER_SECOND;
@@ -151,18 +151,8 @@ public class Game extends Thread {
 			interpolation = (float) ((System.nanoTime() / 1000000) + SKIP_TICKS - NEXT_GAME_TICK) / (float) (SKIP_TICKS);
 			render(interpolation);
 
-			setFpsMeter((int) ((System.nanoTime() / 1000000) + SKIP_TICKS - NEXT_GAME_TICK));
+			RENDER_FPS = ((int) ((System.nanoTime() / 1000000) + SKIP_TICKS - NEXT_GAME_TICK));
 
-			/**
-			try {
-				int sleepTime = (int) (lastLoopTime - System.nanoTime() + OPTIMAL_TIME) / 1000000;
-				System.out.println("sleepTime: " + sleepTime);
-				Thread.sleep(sleepTime);
-			} catch (InterruptedException e) {
-				Thread.interrupted();
-				break;
-			}
-			 **/
 		}
 		frame.dispose();
 	}
@@ -181,10 +171,6 @@ public class Game extends Thread {
 			bg.drawImage(background, 0, 0, width, height, 0, 0, width, height, null);
 			bg.dispose();
 		} while (!updateScreen());
-	}
-
-	private void setFpsMeter(int fps) {
-		RENDER_FPS = fps;
 	}
 	
 	private void tick() {
@@ -207,20 +193,27 @@ public class Game extends Thread {
 			g.fillRect(selX, selY, 16, 16);
 
 			// Debug background
-			//g.fillRect(3, 3, 100, 45);
-
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8F));
+			g.fillRect(3, 3, 110, 120);
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0F));
 
 			// FPS meter	
 			g.setColor(Color.YELLOW);
 			g.setFont(debugFont);
-			//g.drawString("FPS: " + RENDER_FPS, 5, 15);
+			g.drawString("FPS: " + RENDER_FPS, 5, 15);
 
 			// Position data
-			//g.drawString("X: " + player.getPosition().getTileX() + "(" + player.getPosition().getInnerPositionX() +
-			//		") [" +	player.getPosition().getX() + "]", 5, 30);
-			//g.drawString("Y: " + player.getPosition().getTileY() + "(" + player.getPosition().getInnerPositionY() +
-			//		") [" +	player.getPosition().getY() + "]", 5, 45);
+			g.drawString("X: " + player.getPosition().getTileX() + "(" + player.getPosition().getInnerPositionX() +
+					") [" +	player.getPosition().getX() + "]", 5, 30);
+			g.drawString("Y: " + player.getPosition().getTileY() + "(" + player.getPosition().getInnerPositionY() +
+					") [" +	player.getPosition().getY() + "]", 5, 45);
+			g.drawString("Tile: " + testMap.getTileAtPosition(player.getPosition().getTileX(),
+					player.getPosition().getTileY()), 5, 60);
+			g.drawString("Thing: " + testMap.getThingAtPosition(player.getPosition().getTileX(),
+					player.getPosition().getTileY()), 5, 75);
+			g.drawString("Next: " + player.getNextTile(), 5, 90);
+			g.drawString("Next: " + player.getNextThing(), 5, 105);
+			g.drawString("Enterable: " + player.canEnterNextSquare(), 5, 120);
 		}
 		
 		player.render(g, interpolation);

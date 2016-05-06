@@ -31,6 +31,7 @@ public class Thing {
 		if (id == 2) return thingWeeds;
 		if (id == 3) return thingDoorClosed;
 		if (id == 4) return thingDoorOpen;
+		if (id == 5) return thingStone;
 		else return thingEmpty;
 	}
 	
@@ -51,5 +52,6 @@ public class Thing {
 	private static final Thing thingWeeds = new Thing(2, "Weeds", false, false);
 	private static final Thing thingDoorClosed = new Thing(3, "Closed Door", true, true);
 	private static final Thing thingDoorOpen = new Thing(4, "Open Door", false, true);
+	private static final Thing thingStone = new Thing(5, "Stone", true, false);
 	
 }

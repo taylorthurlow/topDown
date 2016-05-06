@@ -19,68 +19,82 @@ public class Entity {
 	}
 
 	public void tick() {
-		if (up && canEnterNextSquare(Direction.NORTH)) position.decrementY(speed);
-		if (down && canEnterNextSquare(Direction.SOUTH)) position.incrementY(speed);
-		if (left && canEnterNextSquare(Direction.WEST)) position.decrementX(speed);
-		if (right && canEnterNextSquare(Direction.EAST)) position.incrementX(speed);
+		viewPosition = position; // may not be necessary
+		if (up && canEnterNextSquare()) position.decrementY(speed);
+		if (down && canEnterNextSquare()) position.incrementY(speed);
+		if (left && canEnterNextSquare()) position.decrementX(speed);
+		if (right && canEnterNextSquare()) position.incrementX(speed);
 	}
 
 	public void render(Graphics g, float interpolation) {
 		setViewPosition(interpolation);
-		g.drawImage(sprites.crop(0, 0, 16, 16),
+		int spriteX, spriteY;
+		switch (viewPosition.getHeading()) {
+			case NORTH:
+				spriteX = 1;
+				spriteY = 0;
+				break;
+			case SOUTH:
+				spriteX = 0;
+				spriteY = 0;
+				break;
+			case EAST:
+				spriteX = 3;
+				spriteY = 0;
+				break;
+			case WEST:
+				spriteX = 2;
+				spriteY = 0;
+				break;
+			case NONE:
+			default:
+				spriteX = 0;
+				spriteY = 0;
+		}
+		g.drawImage(sprites.crop(spriteX, spriteY, 16, 16),
 			(viewPosition.getTileX() * 16 + viewPosition.getInnerPositionX()) - 8,
 			(viewPosition.getTileY() * 16 + viewPosition.getInnerPositionY()) - 8,
 			16, 16, null);
 	}
 
-	public boolean canEnterNextSquare(Direction dir) {
-		return true;
-		/**
-
-		int posX = position.getX() / 16;
-		int posY = position.getY() / 16;
-		int innerPosX = getInnerPositionX();
-		int innerPosY = getInnerPositionY();
-
-		switch (dir) {
+	public Tile getNextTile() {
+		switch (position.getHeading()) {
 			case NORTH:
-				Tile nextTileNorth = map.getTileAtPosition(posX, posY - 1);
-				Thing nextThingNorth = map.getThingAtPosition(posX, posY - 1);
-				if ((!nextTileNorth.isSolid() && !nextThingNorth.isSolid()) || innerPosY != 0) {
-					return true;
-				} else {
-					return false;
-				}
+				return map.getTileAtPosition(position.getTileX(), position.getTileY() - 1);
 			case EAST:
-				Tile nextTileEast = map.getTileAtPosition(posX + 1, posY);
-				Thing nextThingEast = map.getThingAtPosition(posX + 1, posY);
-				if ((!nextTileEast.isSolid() && !nextThingEast.isSolid()) || innerPosX != 15) {
-					return true;
-				} else {
-					return false;
-				}
+				return map.getTileAtPosition(position.getTileX() + 1, position.getTileY());
 			case SOUTH:
-				Tile nextTileSouth = map.getTileAtPosition(posX, posY + 1);
-				Thing nextThingSouth = map.getThingAtPosition(posX, posY + 1);
-				if ((!nextTileSouth.isSolid() && !nextThingSouth.isSolid()) || innerPosY != 15) {
-					return true;
-				} else {
-					return false;
-				}
+				return map.getTileAtPosition(position.getTileX(), position.getTileY() + 1);
 			case WEST:
-				Tile nextTileWest = map.getTileAtPosition(posX - 1, posY);
-				Thing nextThingWest = map.getThingAtPosition(posX - 1, posY);
-				if ((!nextTileWest.isSolid() && !nextThingWest.isSolid()) || innerPosX != 0) {
-					return true;
-				} else {
-					return false;
-				}
+				return map.getTileAtPosition(position.getTileX() - 1, position.getTileY());
 			case NONE:
 			default:
-				return true;
+				return null;
+		}
+	}
 
-		    **/
-		//}
+	public Thing getNextThing() {
+		switch (position.getHeading()) {
+			case NORTH:
+				return map.getThingAtPosition(position.getTileX(), position.getTileY() - 1);
+			case EAST:
+				return map.getThingAtPosition(position.getTileX() + 1, position.getTileY());
+			case SOUTH:
+				return map.getThingAtPosition(position.getTileX(), position.getTileY() + 1);
+			case WEST:
+				return map.getThingAtPosition(position.getTileX() - 1, position.getTileY());
+			case NONE:
+			default:
+				return null;
+		}
+	}
+
+	public boolean canEnterNextSquare() {
+		if (getNextTile().isSolid() || getNextThing().isSolid()) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	public EntityPosition getPosition() {
