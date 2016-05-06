@@ -104,6 +104,14 @@ public class Entity {
 	public void setViewPosition(double interpolation) {
 		double adjustment = round16(speed * interpolation);
 
+		/**
+		 * Note for later: This current implementation of viewPosition
+		 * breaks tile and thing collision. It causes the player to move
+		 * significantly faster than expected, and breaks all collision.
+		 * Fix this to fix issues with collision and speed. When speed is
+		 * 0.0625, the player should move 25 pixels per second.
+		 */
+
 		if (up && !left && !right) { // Only upwards
 			viewPosition.setY(position.getY() - adjustment);
 		} else if (left && !down && !up) { // Only leftwards
